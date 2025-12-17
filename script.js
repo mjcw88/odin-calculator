@@ -1,6 +1,5 @@
 // TODO
 // fix decimal point (e.g. 5.05 not working but 5.5 does)
-// divide by 0
 // add keyboard support
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -15,9 +14,10 @@ document.addEventListener("DOMContentLoaded", function() {
     const display = document.getElementById("display");
     const numberBtns = document.querySelectorAll(".number-btn");
     const operatorBtns = document.querySelectorAll(".operator-btn");
+    const calculatorBtns = document.querySelectorAll(".calculator-btn");
 
     const maxNum = 999999999999999;
-    const minNum = -999999999999999;
+    const minNum = maxNum / -1;
     const maxDigits = `${maxNum}`.length;    
     const maxDecimals = 3;
 
@@ -27,26 +27,27 @@ document.addEventListener("DOMContentLoaded", function() {
     let result = null;
     let operator = null;
     let operatorFlag = false;
+    let zeroDivideFlag = false;
 
-    function operate(num1, num2, operator) {
+    function operate(operand1, operand2, operator) {
         switch(operator) {
             case "÷":
-                result = num1 / num2;
+                result = operand1 / operand2;
                 break;
             case "x":
-                result = num1 * num2;
+                result = operand1 * operand2;
                 break;
             case "-":
-                result = num1 - num2;
+                result = operand1 - operand2;
                 break;
             case "+":
-                result = num1 + num2;
+                result = operand1 + operand2;
                 break;
         }
 
         result = parseFloat(result.toFixed(maxDecimals))
 
-        console.log(`operation performed: ${num1} ${operator} ${num2} = ${result}`)
+        console.log(`operation performed: ${operand1} ${operator} ${operand2} = ${result}`)
 
         if (result > maxNum) {
             result = maxNum;
@@ -54,14 +55,32 @@ document.addEventListener("DOMContentLoaded", function() {
             result = minNum;
         }
 
-        miniDisplayNum1.textContent = num1;
+        miniDisplayNum1.textContent = operand1;
         miniDisplayOperator.textContent = operator;
-        miniDisplayNum2.textContent = num2;
+        miniDisplayNum2.textContent = operand2;
 
-        display.textContent = result.toLocaleString(undefined, { 
-            maximumFractionDigits: maxDecimals });
+        if (operator === "÷" && operand2 === 0) {
+            clearAll();
+            flipCalculatorButtons();
+
+            display.textContent = ">:[";
+            zeroDivideFlag = true;
+        } else {
+            display.textContent = result.toLocaleString(undefined, { 
+                maximumFractionDigits: maxDecimals });
+        }
 
         return result;
+    };
+
+    function flipCalculatorButtons() {
+        operatorBtns.forEach(btn => {
+            btn.disabled = !btn.disabled;
+        });
+
+        calculatorBtns.forEach(btn => {
+            btn.disabled = !btn.disabled;
+        });
     };
 
     function storeNumber(number) {
@@ -72,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function() {
             num1 = number;
             miniDisplayNum1.textContent = num1;
             operatorFlag = true;
-        } else if (num2 === null) {
+        } else {
             num2 = number;
         }
     };
@@ -142,14 +161,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    clearBtn.addEventListener("click", () => {
-        display.textContent = "0";
-        miniDisplayOperator.textContent = "";
-        miniDisplayNum2.textContent = "";
-        num2Temp = null;
-    });
-
-    allClearBtn.addEventListener("click", () => {
+    function clearAll() {
         num1 = null;
         num2 = null;
         num2Temp = null;
@@ -159,6 +171,16 @@ document.addEventListener("DOMContentLoaded", function() {
         miniDisplayOperator.textContent = "";
         miniDisplayNum2.textContent = "";
         display.textContent = "0";
+    };
+
+    clearBtn.addEventListener("click", () => {
+        display.textContent = "0";
+        miniDisplayNum2.textContent = "";
+        num2Temp = null;
+    });
+
+    allClearBtn.addEventListener("click", () => {
+        clearAll();
     });
 
     plusMinusBtn.addEventListener("click", () => {
@@ -171,6 +193,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
     numberBtns.forEach(btn => {
         btn.addEventListener("click", () => {
+            if (zeroDivideFlag) {
+                flipCalculatorButtons();
+                zeroDivideFlag = false;
+            }
+
             updateDisplay(btn.textContent);
         });
     });
@@ -198,10 +225,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     num2Temp = cleanNumber(display.textContent);
                     num2Temp = parseFloat(num2Temp);
                 }
+
+                miniDisplayNum1.textContent = num1;
                 
                 operator = btn.textContent;
                 miniDisplayOperator.textContent = operator;
-            
 
                 if (result != null) {
                     miniDisplayNum1.textContent = result;
