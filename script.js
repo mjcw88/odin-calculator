@@ -1,5 +1,7 @@
 // TODO
 // fix decimal point (e.g. 5.05 not working but 5.5 does)
+// divide by 0
+// add keyboard support
 
 document.addEventListener("DOMContentLoaded", function() {
     const clearBtn = document.getElementById("clear-btn");
@@ -21,6 +23,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let num1 = null;
     let num2 = null;
+    let num2Temp = null;
     let result = null;
     let operator = null;
     let operatorFlag = false;
@@ -61,22 +64,22 @@ document.addEventListener("DOMContentLoaded", function() {
         return result;
     };
 
-    function storeNumbers(number) {
+    function storeNumber(number) {
         number = cleanNumber(number)
-        
+        number = parseFloat(number);
+
         if (num1 === null) {
-            num1 = parseFloat(number);
+            num1 = number;
             miniDisplayNum1.textContent = num1;
             operatorFlag = true;
-            console.log(`num1 stored: ${num1}`)
-        } else {
-            num2 = parseFloat(number);
-            console.log(`num2 stored: ${num2}`)
+        } else if (num2 === null) {
+            num2 = number;
         }
     };
 
     function cleanNumber(number) {
         return number
+            .toString()
             .split("")
             .filter(char => {return /[0-9\.\-]/
             .test(char)})
@@ -141,11 +144,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
     clearBtn.addEventListener("click", () => {
         display.textContent = "0";
+        miniDisplayOperator.textContent = "";
+        miniDisplayNum2.textContent = "";
+        num2Temp = null;
     });
 
     allClearBtn.addEventListener("click", () => {
         num1 = null;
         num2 = null;
+        num2Temp = null;
         result = null;
         operator = null;
         miniDisplayNum1.textContent = "";
@@ -170,25 +177,37 @@ document.addEventListener("DOMContentLoaded", function() {
 
     operatorBtns.forEach(btn => {
         btn.addEventListener("click", () => {
-            storeNumbers(display.textContent);
+            if (!operatorFlag) {
+                storeNumber(display.textContent);
+            }
+            
+            if (num1 != null && num2 != null && operator != "=") {
+                result = operate(num1, num2, operator);
+                num1 = result;
+                num2Temp = num2;
+                num2 = null;
+                operatorFlag = true;
+            } else if (num2Temp != null && btn.textContent === "=") {
+                result = operate(num1, num2Temp, operator);
+                num1 = result;
+                operatorFlag = true;
+            }
 
             if (btn.textContent != "=") {
+                if (num2Temp != null) {
+                    num2Temp = cleanNumber(display.textContent);
+                    num2Temp = parseFloat(num2Temp);
+                }
+                
                 operator = btn.textContent;
                 miniDisplayOperator.textContent = operator;
-                console.log(`operator stored: ${operator}`)
+            
 
                 if (result != null) {
                     miniDisplayNum1.textContent = result;
                     miniDisplayOperator.textContent = operator;
                     miniDisplayNum2.textContent = "";
                 }
-            }
-
-            if (num1 != null && num2 != null && operator != null && btn.textContent === "=") {
-                result = operate(num1, num2, operator);
-                num1 = result;
-                num2 = null;
-                operatorFlag = true;
             }
         });
     });
