@@ -1,9 +1,5 @@
 // TODO
-// fix how results are displayed
-// fix how negative numbers work going back
-// fix how operate buttons perform, especially the equals button and the operator buttons after a result has been generated
-// the result needs to be stored in num1 after an operation is performed
-// make sure clear buttons execute correctly
+// fix decimal point (e.g. 5.05 not working but 5.5 does)
 
 document.addEventListener("DOMContentLoaded", function() {
     const clearBtn = document.getElementById("clear-btn");
@@ -11,21 +7,25 @@ document.addEventListener("DOMContentLoaded", function() {
     const plusMinusBtn = document.getElementById("plusminus-btn");
     const backSpaceBtn = document.getElementById("backspace-btn");
 
+    const miniDisplayNum1 = document.getElementById("mini-display-number-one");
+    const miniDisplayOperator = document.getElementById("mini-display-operator");
+    const miniDisplayNum2 = document.getElementById("mini-display-number-two");
     const display = document.getElementById("display");
     const numberBtns = document.querySelectorAll(".number-btn");
     const operatorBtns = document.querySelectorAll(".operator-btn");
 
-    const MAX_DIGITS = 15;
-    const MAX_DECIMALS = 3;
+    const maxNum = 999999999999999;
+    const minNum = -999999999999999;
+    const maxDigits = `${maxNum}`.length;    
+    const maxDecimals = 3;
 
     let num1 = null;
     let num2 = null;
+    let result = null;
     let operator = null;
     let operatorFlag = false;
 
     function operate(num1, num2, operator) {
-        let result = 0;
-
         switch(operator) {
             case "÷":
                 result = num1 / num2;
@@ -41,21 +41,37 @@ document.addEventListener("DOMContentLoaded", function() {
                 break;
         }
 
+        result = parseFloat(result.toFixed(maxDecimals))
+
         console.log(`operation performed: ${num1} ${operator} ${num2} = ${result}`)
 
-        display.textContent = result;
+        if (result > maxNum) {
+            result = maxNum;
+        } else if (result < minNum) {
+            result = minNum;
+        }
+
+        miniDisplayNum1.textContent = num1;
+        miniDisplayOperator.textContent = operator;
+        miniDisplayNum2.textContent = num2;
+
+        display.textContent = result.toLocaleString(undefined, { 
+            maximumFractionDigits: maxDecimals });
+
+        return result;
     };
 
-    function storeNumbers(operatorBtn) {
-        operatorFlag = true;
-        const number = cleanNumber(display.textContent)
+    function storeNumbers(number) {
+        number = cleanNumber(number)
         
         if (num1 === null) {
             num1 = parseFloat(number);
-            operator = operatorBtn;
+            miniDisplayNum1.textContent = num1;
+            operatorFlag = true;
+            console.log(`num1 stored: ${num1}`)
         } else {
             num2 = parseFloat(number);
-            operate(num1, num2, operator)
+            console.log(`num2 stored: ${num2}`)
         }
     };
 
@@ -78,7 +94,20 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         display.textContent = number.toLocaleString(undefined, { 
-            maximumFractionDigits: MAX_DECIMALS });
+            maximumFractionDigits: maxDecimals });
+    };
+
+    function deleteLastNumber(number) {
+        number = number.slice(0, number.length - 1);
+        number = cleanNumber(number);
+        number = parseFloat(number);
+
+        if (number === "" || isNaN(number)) {
+            number = 0;
+        }
+
+        display.textContent = number.toLocaleString(undefined, { 
+            maximumFractionDigits: maxDecimals });
     };
 
     function updateDisplay(number) {
@@ -87,17 +116,22 @@ document.addEventListener("DOMContentLoaded", function() {
             operatorFlag = false;
         }
 
+        if (result != null) {
+            miniDisplayNum1.textContent = result;
+            miniDisplayNum2.textContent = "";
+        }
+
         const cleanedNumber = cleanNumber(display.textContent);
         const decimalPlaces = cleanedNumber.split(".")[1] ? cleanedNumber.split(".")[1].length : 0;
 
         if ((!display.textContent.includes(".") || number != ".") && 
-            (cleanedNumber.length < MAX_DIGITS) &&
-            decimalPlaces < MAX_DECIMALS) {
+            (cleanedNumber.length < maxDigits) &&
+            decimalPlaces < maxDecimals) {
 
             let newNumber = parseFloat(cleanedNumber + number);
 
             display.textContent = newNumber.toLocaleString(undefined, { 
-                maximumFractionDigits: MAX_DECIMALS });
+                maximumFractionDigits: maxDecimals });
 
             if (number === ".") {
                 display.textContent = display.textContent + number;
@@ -112,7 +146,11 @@ document.addEventListener("DOMContentLoaded", function() {
     allClearBtn.addEventListener("click", () => {
         num1 = null;
         num2 = null;
+        result = null;
         operator = null;
+        miniDisplayNum1.textContent = "";
+        miniDisplayOperator.textContent = "";
+        miniDisplayNum2.textContent = "";
         display.textContent = "0";
     });
 
@@ -121,16 +159,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     backSpaceBtn.addEventListener("click", () => {
-        let number = display.textContent.slice(0, display.textContent.length - 1);
-        number = cleanNumber(number);
-        number = parseFloat(number);
-
-        if (number === "" || isNaN(number)) {
-            number = 0;
-        }
-
-        display.textContent = number.toLocaleString(undefined, { 
-            maximumFractionDigits: MAX_DECIMALS });
+        deleteLastNumber(display.textContent);
     });
 
     numberBtns.forEach(btn => {
@@ -141,7 +170,26 @@ document.addEventListener("DOMContentLoaded", function() {
 
     operatorBtns.forEach(btn => {
         btn.addEventListener("click", () => {
-            storeNumbers(btn.textContent);
+            storeNumbers(display.textContent);
+
+            if (btn.textContent != "=") {
+                operator = btn.textContent;
+                miniDisplayOperator.textContent = operator;
+                console.log(`operator stored: ${operator}`)
+
+                if (result != null) {
+                    miniDisplayNum1.textContent = result;
+                    miniDisplayOperator.textContent = operator;
+                    miniDisplayNum2.textContent = "";
+                }
+            }
+
+            if (num1 != null && num2 != null && operator != null && btn.textContent === "=") {
+                result = operate(num1, num2, operator);
+                num1 = result;
+                num2 = null;
+                operatorFlag = true;
+            }
         });
     });
 });
