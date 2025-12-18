@@ -111,6 +111,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function handleOperatorClick(e) {
         if (!calculatorState.operatorBtnClicked) storeNumber(display.textContent);
+        display.textContent = parseFloat(display.textContent);
         
         performOperationType(e);
 
