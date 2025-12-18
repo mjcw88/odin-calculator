@@ -1,6 +1,4 @@
 // TODO
-// fix decimal point (e.g. 5.05 not working but 5.5 does)
-// fix NaN issues (clicking on decimal point after cycling through equals button e.g.)
 // add keyboard support
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -92,13 +90,13 @@ document.addEventListener("DOMContentLoaded", function() {
         let number = display.textContent;
         number = number.slice(0, number.length - 1);
         number = stripCommas(number);
+        const decimalPlaces = getDecimalPlaces(number);
         number = parseFloat(number);
 
-        if (number === "" || isNaN(number)) {
-            number = 0;
-        }
+        if (number === "" || isNaN(number)) number = 0;
 
-        display.textContent = number.toLocaleString(undefined, { 
+        display.textContent = number.toLocaleString(undefined, {
+            minimumFractionDigits: decimalPlaces,
             maximumFractionDigits: MAX_DECIMALS });
     };
 
@@ -112,21 +110,18 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     function handleOperatorClick(e) {
-        if (!calculatorState.operatorBtnClicked) {
-            storeNumber(display.textContent);
-        }
+        if (!calculatorState.operatorBtnClicked) storeNumber(display.textContent);
         
         performOperationType(e);
 
         if (e.target.textContent != "=") {
             updateNum2Temp();
-            miniDisplayNum1.textContent = operation.num1;
             storeOperator(e);
             updateMiniDisplay();
         }
     };
 
-    function updateDisplay(number) {
+    function updateDisplay(input) {
         if (calculatorState.operatorBtnClicked) {
             display.textContent = "";
             calculatorState.operatorBtnClicked = false;
@@ -138,19 +133,25 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         const cleanedNumber = stripCommas(display.textContent);
-        const decimalPlaces = cleanedNumber.split(".")[1] ? cleanedNumber.split(".")[1].length : 0;
+        const decimalPlaces = getDecimalPlaces(cleanedNumber);
 
-        if ((!display.textContent.includes(".") || number != ".") && 
+        if ((!display.textContent.includes(".") || input != ".") && 
             (cleanedNumber.length < MAX_DIGITS) &&
             decimalPlaces < MAX_DECIMALS) {
 
-            let newNumber = parseFloat(cleanedNumber + number);
+            let newNumber = parseFloat(cleanedNumber + input);
 
-            display.textContent = newNumber.toLocaleString(undefined, { 
-                maximumFractionDigits: MAX_DECIMALS });
-
-            if (number === ".") {
-                display.textContent = display.textContent + number;
+            if (input === "." && display.textContent != "") {
+                display.textContent = display.textContent + input;
+            } else if (input === "." && display.textContent === "") {
+                display.textContent = 0 + input;
+            } else if (cleanedNumber.includes(".") && input == 0) {
+                display.textContent = newNumber.toLocaleString(undefined, { 
+                    minimumFractionDigits: decimalPlaces + 1,
+                    maximumFractionDigits: MAX_DECIMALS });
+            } else {
+                display.textContent = newNumber.toLocaleString(undefined, { 
+                    maximumFractionDigits: MAX_DECIMALS });
             }
         }
     };
@@ -174,11 +175,12 @@ document.addEventListener("DOMContentLoaded", function() {
             operation.num1 = operation.result;
             operation.num2Temp = operation.num2;
             operation.num2 = null;
+            calculatorState.operatorBtnClicked = true;
         } else if (operation.num1 != null && operation.num2Temp != null && e.target.textContent === "=") {
             operation.result = operate(operation.num1, operation.num2Temp, operation.operator);
             operation.num1 = operation.result;
+            calculatorState.operatorBtnClicked = true;
         }
-        calculatorState.operatorBtnClicked = true;
     };
 
     function updateNum2Temp() {
@@ -196,6 +198,8 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     function updateMiniDisplay() {
+        miniDisplayNum1.textContent = operation.num1;
+
         if (operation.result != null) {
             miniDisplayNum1.textContent = operation.result;
             miniDisplayNum2.textContent = "";
@@ -243,6 +247,10 @@ document.addEventListener("DOMContentLoaded", function() {
             .join("");
     };
 
+    function getDecimalPlaces(number) {
+        return number.split(".")[1] ? number.split(".")[1].length : 0;
+    };
+
     function flipCalculatorButtons() {
         operatorBtns.forEach(btn => {
             btn.disabled = !btn.disabled;
@@ -281,12 +289,12 @@ document.addEventListener("DOMContentLoaded", function() {
         return num1 / num2;
     };
 
-    function checkResultLength(result) {
-        if (result > MAX_NUM) {
-            return result = MAX_NUM;
-        } else if (result < MIN_NUM) {
-            return result = MIN_NUM;
+    function checkResultLength(number) {
+        if (number > MAX_NUM) {
+            return number = MAX_NUM;
+        } else if (number < MIN_NUM) {
+            return number = MIN_NUM;
         }
-        return result;
+        return number;
     };
 });
