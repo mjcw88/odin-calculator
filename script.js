@@ -70,8 +70,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function clearAll() {
         display.textContent = "0";
-        miniDisplayNum2.textContent = "";
         miniDisplayNum1.textContent = "";
+        miniDisplayNum2.textContent = "";
         miniDisplayOperator.textContent = "";
 
         for (property in operation) {
@@ -177,8 +177,8 @@ document.addEventListener("DOMContentLoaded", function() {
         if (calculatorState.equalsBtnClicked) {
             operation.num1 = null;
             miniDisplayNum1.textContent = "";
-            miniDisplayOperator.textContent = "";
             miniDisplayNum2.textContent = "";
+            miniDisplayOperator.textContent = "";
             calculatorState.equalsBtnClicked = false;
             console.log("calculatorState.equalsBtnClicked condition found")
         }
