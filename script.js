@@ -1,12 +1,10 @@
-// TODO
-// add keyboard support
-
 document.addEventListener("DOMContentLoaded", function() {
     // Constants
     const MAX_NUM = 999999999999999;
     const MIN_NUM = MAX_NUM / -1;
     const MAX_DIGITS = `${MAX_NUM}`.length;    
     const MAX_DECIMALS = 3;
+    const BUTTON_TIMEOUT = 100;
 
     // Objects
     const operation = {
@@ -25,20 +23,23 @@ document.addEventListener("DOMContentLoaded", function() {
     // DOM References
     const clearBtn = document.getElementById("clear-btn");
     const allClearBtn = document.getElementById("allclear-btn");
-    const plusMinusBtn = document.getElementById("plusminus-btn");
+    const inverseBtn = document.getElementById("inverse-btn");
     const backSpaceBtn = document.getElementById("backspace-btn");
     const numberBtns = document.querySelectorAll(".number-btn");
     const operatorBtns = document.querySelectorAll(".operator-btn");
     const calculatorBtns = document.querySelectorAll(".calculator-btn");
+    const keyboard = document.querySelectorAll(".keyboard");
     const display = document.getElementById("display");
     const miniDisplayNum1 = document.getElementById("mini-display-number-one");
     const miniDisplayOperator = document.getElementById("mini-display-operator");
     const miniDisplayNum2 = document.getElementById("mini-display-number-two");
 
     // Event Listeners
+    document.body.addEventListener("keydown", handleKeyboardPress);
+
     clearBtn.addEventListener("click", clearDisplay);
     allClearBtn.addEventListener("click", clearAll);
-    plusMinusBtn.addEventListener("click", reverseNumber);
+    inverseBtn.addEventListener("click", inverseNumber);
     backSpaceBtn.addEventListener("click", deleteLastNumber);
 
     numberBtns.forEach(btn =>
@@ -71,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    function reverseNumber() {
+    function inverseNumber() {
         let number = display.textContent;
         number = stripCommas(number);
         number = parseFloat(number);
@@ -111,8 +112,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function handleOperatorClick(e) {
         if (!calculatorState.operatorBtnClicked) storeNumber(display.textContent);
-        display.textContent = parseFloat(display.textContent);
-        
         performOperationType(e);
 
         if (e.target.textContent != "=") {
@@ -121,6 +120,18 @@ document.addEventListener("DOMContentLoaded", function() {
             updateMiniDisplay();
         }
     };
+
+    function handleKeyboardPress(e) {
+        keyboard.forEach(btn => {
+            if (!btn.disabled) {
+                if (e.key.toLowerCase() === btn.dataset.keyboard.toLowerCase()) {
+                    btn.classList.add('active');
+                    btn.click();
+                    setTimeout(() => btn.classList.remove('active'), BUTTON_TIMEOUT);
+                }
+            }
+        });
+    }
 
     function updateDisplay(input) {
         if (calculatorState.operatorBtnClicked) {
@@ -171,16 +182,18 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     function performOperationType(e) {
-        if (operation.num1 != null && operation.num2 != null && operation.operator != "=") {
-            operation.result = operate(operation.num1, operation.num2, operation.operator);
-            operation.num1 = operation.result;
-            operation.num2Temp = operation.num2;
-            operation.num2 = null;
-            calculatorState.operatorBtnClicked = true;
-        } else if (operation.num1 != null && operation.num2Temp != null && e.target.textContent === "=") {
-            operation.result = operate(operation.num1, operation.num2Temp, operation.operator);
-            operation.num1 = operation.result;
-            calculatorState.operatorBtnClicked = true;
+        if (operation.num1 != null && operation.operator != null) {
+            if (operation.num2 != null && operation.operator !== "=") {
+                operation.result = operate(operation.num1, operation.num2, operation.operator);
+                operation.num1 = operation.result;
+                operation.num2Temp = operation.num2;
+                operation.num2 = null;
+                calculatorState.operatorBtnClicked = true;
+            } else if (operation.num2Temp != null && e.target.textContent === "=") {
+                operation.result = operate(operation.num1, operation.num2Temp, operation.operator);
+                operation.num1 = operation.result;
+                calculatorState.operatorBtnClicked = true;
+            }
         }
     };
 

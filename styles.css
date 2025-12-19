@@ -33,3 +33,10 @@
 .numbers-row {
     display: flex;
 }
+
+.number-btn.active,
+.operator-btn.active,
+.calculator-btn.active {
+    transform: scale(0.95);
+    filter: brightness(0.9);
+}
