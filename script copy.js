@@ -1,3 +1,7 @@
+// TODO
+// Remove all redundancies in logic and remove all console logs
+// test for more bugs
+
 document.addEventListener("DOMContentLoaded", function() {
     // Constants
     const MAX_NUM = 999999999999999;
@@ -10,13 +14,13 @@ document.addEventListener("DOMContentLoaded", function() {
     const operation = {
         num1: null,
         num2: null,
-        num2Temp: null,
         operator: null,
         result: null,
     };
 
     const calculatorState = {
         operatorBtnClicked: false,
+        equalsBtnClicked: false,
         dividedByZero: false,
     };
 
@@ -51,28 +55,54 @@ document.addEventListener("DOMContentLoaded", function() {
     );
 
     // Functions & Core Logic
-    function clearDisplay() {
+    function clearDisplay() {    
+        console.log("clearDisplay Function Executed");
+        
+        if (!isInitialState()) {
+            if (operation.operator === null || calculatorState.equalsBtnClicked) {
+                operation.num1 = 0;
+
+                console.log(`num1 stored: ${operation.num1}`);
+
+            } else if (operation.operator !== null && !calculatorState.operatorBtnClicked) {
+                operation.num2 = 0;
+
+                console.log(`num2 stored: ${operation.num2}`)
+            }
+        }
+
         display.textContent = "0";
-        miniDisplayNum2.textContent = "";
-        operation.num2Temp = null;
+
+        console.log("clearDisplay Function Finished");
+        console.log(`--------------------------------------------------`)
     };
 
     function clearAll() {
+        console.log("clearAll Function Executed");
+
         display.textContent = "0";
-        miniDisplayNum2.textContent = "";
         miniDisplayNum1.textContent = "";
+        miniDisplayNum2.textContent = "";
         miniDisplayOperator.textContent = "";
 
         for (property in operation) {
             operation[property] = null;
+
+            console.log(`${property}:`, operation[property]);
         }
 
         for (property in calculatorState) {
             calculatorState[property] = false;
+
+            console.log(`${property}:`, calculatorState[property]);
         }
+        console.log("clearAll Function Finished");
+        console.log(`--------------------------------------------------`)
     };
 
     function inverseNumber() {
+        console.log("inverseNumber Function Executed");
+
         let number = display.textContent;
         number = stripCommas(number);
         number = parseFloat(number);
@@ -83,11 +113,31 @@ document.addEventListener("DOMContentLoaded", function() {
             number = number * -1;
         }
 
+        if (operation.operator === null || calculatorState.equalsBtnClicked) {
+            operation.num1 = number;
+
+            console.log(`num1 stored: ${operation.num1}`);
+
+        } else if (operation.operator !== null && !calculatorState.operatorBtnClicked) {
+            operation.num2 = number;
+
+            console.log(`num2 stored: ${operation.num2}`)
+        }
+
+        operation.result = null;
+
+        console.log(`result stored: ${operation.result}`)
+
         display.textContent = number.toLocaleString(undefined, { 
             maximumFractionDigits: MAX_DECIMALS });
-    };
+
+        console.log("inverseNumber Function fnished");
+        console.log(`--------------------------------------------------`)
+    }
 
     function deleteLastNumber() {
+        console.log("deleteLastNumber Function Executed");
+
         let number = display.textContent;
         number = number.slice(0, number.length - 1);
         number = stripCommas(number);
@@ -95,31 +145,67 @@ document.addEventListener("DOMContentLoaded", function() {
         number = parseFloat(number);
 
         if (number === "" || isNaN(number)) number = 0;
+        
+        if (!isInitialState()) {
+            if (operation.operator === null || calculatorState.equalsBtnClicked) {
+                operation.num1 = number;
+
+                console.log(`num1 stored: ${operation.num1}`);
+
+            } else if (operation.operator !== null && !calculatorState.operatorBtnClicked) {
+                operation.num2 = number;
+
+                console.log(`num2 stored: ${operation.num2}`)
+            }
+        }
 
         display.textContent = number.toLocaleString(undefined, {
             minimumFractionDigits: decimalPlaces,
             maximumFractionDigits: MAX_DECIMALS });
+        console.log("deleteLastNumber Function finished");
+        console.log(`--------------------------------------------------`)
     };
 
     function handleNumberClick(e) {
+        console.log("handleNumberClick Function Executed");
+
         if (calculatorState.dividedByZero) {
             flipCalculatorButtons();
             calculatorState.dividedByZero = false;
+
+            console.log(`divided by zero flag: ${calculatorState.dividedByZero}`)
         }
 
         updateDisplay(e.target.textContent);
+        console.log("handleNumberClick Function finished");
+        console.log(`--------------------------------------------------`)
     };
 
     function handleOperatorClick(e) {
+        console.log("handleOperatorClick Function Executed");
+
         if (!calculatorState.operatorBtnClicked) storeNumber(display.textContent);
+        if (calculatorState.equalsBtnClicked && e.target.textContent != "=") {
+            operation.num2 = null;
+            calculatorState.equalsBtnClicked = false;
+
+            console.log(`num2 stored: ${operation.num2}`)
+            console.log(`equals btn clicked: ${calculatorState.equalsBtnClicked}`)
+        }
         
-        performOperationType(e);
+        updateMiniDisplay();
+        
+        performOperationChecks(e)
 
         if (e.target.textContent != "=") {
-            updateNum2Temp();
-            storeOperator(e);
+            storeOperator(e.target.textContent);
             updateMiniDisplay();
         }
+        
+        calculatorState.operatorBtnClicked = true;
+        console.log(`operator btn clicked ${calculatorState.operatorBtnClicked}`)
+        console.log("handleOperatorClick Function fnished");
+        console.log(`--------------------------------------------------`)
     };
 
     function handleKeyboardPress(e) {
@@ -135,23 +221,31 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function updateDisplay(input) {
+        console.log("updateDisplay Function Executed");
+        if (display.textContent.includes(".") && input === ".") return;
+
         if (calculatorState.operatorBtnClicked) {
             display.textContent = "";
             calculatorState.operatorBtnClicked = false;
+            console.log(`opreator btn clicked: ${calculatorState.operatorBtnClicked}`)
         }
 
-        if (operation.result != null) {
-            miniDisplayNum1.textContent = operation.result;
+        if (calculatorState.equalsBtnClicked) {
+            operation.num1 = null;
+
+            console.log(`num1 stored: ${operation.num1}`);
+
+            miniDisplayNum1.textContent = "";
             miniDisplayNum2.textContent = "";
+            miniDisplayOperator.textContent = "";
+            calculatorState.equalsBtnClicked = false;
+            console.log(`equals btn clicked: ${calculatorState.equalsBtnClicked}`)
         }
 
         const cleanedNumber = stripCommas(display.textContent);
         const decimalPlaces = getDecimalPlaces(cleanedNumber);
 
-        if ((!display.textContent.includes(".") || input != ".") && 
-            (cleanedNumber.length < MAX_DIGITS) &&
-            decimalPlaces < MAX_DECIMALS) {
-
+        if (cleanedNumber.length < MAX_DIGITS && decimalPlaces < MAX_DECIMALS) {
             let newNumber = parseFloat(cleanedNumber + input);
 
             if (input === "." && display.textContent != "") {
@@ -167,79 +261,92 @@ document.addEventListener("DOMContentLoaded", function() {
                     maximumFractionDigits: MAX_DECIMALS });
             }
         }
+        console.log("updateDisplay Function finished");
+        console.log(`--------------------------------------------------`)
     };
 
     function storeNumber(number) {
+        console.log("StoreNumber Function Executed");
+
         number = stripCommas(number)
         number = parseFloat(number);
 
         if (operation.num1 === null) {
             operation.num1 = number;
-            miniDisplayNum1.textContent = operation.num1;
-            calculatorState.operatorBtnClicked = true;
 
             console.log(`num1 stored: ${operation.num1}`)
 
         } else {
             operation.num2 = number;
-
+            
             console.log(`num2 stored: ${operation.num2}`)
-
         }
+        console.log("StoreNumber Function finished");
+        console.log(`--------------------------------------------------`)
     };
 
-    function performOperationType(e) {
-        if (operation.num1 != null && operation.operator != null) {
-            if (operation.num2 != null && operation.operator !== "=") {
+    function performOperationChecks(e) {
+        console.log("performOperationChecks Function Executed");
+
+        if (operation.num1 === null || operation.operator === null) return;
+        if (operation.num2 === null && e.target.textContent === "=") storeNumber(display.textContent);
+
+        if (operation.num2 != null) {
                 operation.result = operate(operation.num1, operation.num2, operation.operator);
                 operation.num1 = operation.result;
-                operation.num2Temp = operation.num2;
+
+                console.log(`num1 stored: ${operation.num1}`);
+
+            if (e.target.textContent != "=") {
+                calculatorState.equalsBtnClicked = false;
+
+                console.log(`equals btn clicked: ${calculatorState.equalsBtnClicked}`)
+
                 operation.num2 = null;
-                calculatorState.operatorBtnClicked = true;
 
-                console.log(`operation 1 performed`)
+                console.log(`num2 stored: ${operation.num2}`)
 
-            } else if (e.target.textContent === "=") {
-                updateNum2Temp();
-
-                console.log(operation.num2Temp);
-                
-                operation.result = operate(operation.num1, operation.num2Temp, operation.operator);
-                operation.num1 = operation.result;
-                calculatorState.operatorBtnClicked = true;
-
-                console.log(`operation 2 performed`)
             } else {
-                console.log(`no operation performed`)
+                calculatorState.equalsBtnClicked = true;
+
+                console.log(`equals btn clicked: ${calculatorState.equalsBtnClicked}`)
             }
         }
+        console.log("performOperationChecks Function finished");
+        console.log(`--------------------------------------------------`)
     };
 
-    function updateNum2Temp() {
-        operation.num2Temp = stripCommas(display.textContent);
-        operation.num2Temp = parseFloat(operation.num2Temp);
-        console.log(`num2Temp stored: ${operation.num2Temp}`)
-    };
-
-    function storeOperator(e) {        
+    function storeOperator(operator) {   
+        console.log("storeOperator Function Executed");
+        
         if (!calculatorState.dividedByZero) {
-            operation.operator = e.target.textContent;
-            miniDisplayOperator.textContent = operation.operator;
+            operation.operator = operator;
 
             console.log(`operator stored: ${operation.operator}`)
         }
+        console.log("storeOperator Function finished");
+        console.log(`--------------------------------------------------`)
     };
 
     function updateMiniDisplay() {
-        miniDisplayNum1.textContent = operation.num1;
+
+        console.log("updateMiniDisplay Function Executed");
+        
+        if (operation.num1 != null) miniDisplayNum1.textContent = operation.num1;
+        if (operation.operator != null) miniDisplayOperator.textContent = operation.operator;
 
         if (operation.result != null) {
             miniDisplayNum1.textContent = operation.result;
             miniDisplayNum2.textContent = "";
         }
+        console.log("updateMiniDisplay Function finished");
+        console.log(`--------------------------------------------------`)
     };
 
     function operate(operand1, operand2, operator) {
+
+        console.log("operate Function Executed");
+
         if (isDividedByZero(operand2, operator)) return null;
 
         switch(operator) {
@@ -266,13 +373,24 @@ document.addEventListener("DOMContentLoaded", function() {
         miniDisplayOperator.textContent = operator;
         miniDisplayNum2.textContent = operand2;
 
+        console.log(`displayed result: ${operation.result.toLocaleString(undefined, { 
+            maximumFractionDigits: MAX_DECIMALS })}`);
+
         display.textContent = operation.result.toLocaleString(undefined, { 
             maximumFractionDigits: MAX_DECIMALS });
 
+        console.log("operate Function finished");
+        console.log(`--------------------------------------------------`)
+
         return operation.result;
+
     };
 
     // Helper Functions
+    function isInitialState() {
+        return operation.num1 === null && operation.num2 === null && operation.operator === null;
+    }
+
     function stripCommas(number) {
         return number
             .toString()
