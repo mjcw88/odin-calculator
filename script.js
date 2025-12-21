@@ -189,7 +189,9 @@ document.addEventListener("DOMContentLoaded", function() {
             storeNumber(display.textContent);
         }
 
-        if (calculatorState.clearBtnClicked || calculatorState.inverseBtnClicked || calculatorState.deleteLastNumberBtnClicked) {            
+        if (calculatorState.clearBtnClicked || 
+            calculatorState.inverseBtnClicked || 
+            calculatorState.deleteLastNumberBtnClicked) {            
             assignNumBasedOnState(display.textContent);
             
             if (calculatorState.inverseBtnClicked) calculatorState.inverseBtnClicked = false;
@@ -197,22 +199,13 @@ document.addEventListener("DOMContentLoaded", function() {
             if (calculatorState.clearBtnClicked) calculatorState.clearBtnClicked = false;
         }
         
-        if (calculatorState.justClearedAfterEquals && e.target.textContent != "=") {
+        if ((calculatorState.justClearedAfterEquals || calculatorState.equalsBtnClicked) 
+            && e.target.textContent != "=") {
             resetOperationWithCurrentDisplay(display.textContent);
             storeOperator(e.target.textContent);
-
+            calculatorState.operatorBtnClicked = true;
             calculatorState.justClearedAfterEquals = false;
-            
-            updateMiniDisplay();
-            return;
-        }
-        
-        if (calculatorState.equalsBtnClicked && e.target.textContent != "=") {
-            resetOperationWithCurrentDisplay(display.textContent);
-            storeOperator(e.target.textContent);
-
             calculatorState.equalsBtnClicked = false;
-
             updateMiniDisplay();
             return;
         }
@@ -254,7 +247,7 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     function resetOperationWithCurrentDisplay(number) {
-        let number = stripCommas(number);
+        number = stripCommas(number);
         number = parseFloat(number);
         operation.num1 = number;
         
@@ -264,7 +257,6 @@ document.addEventListener("DOMContentLoaded", function() {
         operation.miniDisplayNum1 = null;
         operation.miniDisplayNum2 = null;
         operation.miniDisplayOperator = null;
-        calculatorState.operatorBtnClicked = true;
     };
 
     function storeOperator(operator) {           
