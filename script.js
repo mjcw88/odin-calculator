@@ -24,9 +24,9 @@ document.addEventListener("DOMContentLoaded", function() {
         clearBtnClicked: false,
         inverseBtnClicked: false,
         deleteLastNumberBtnClicked: false,
-        dividedByZero: false,
         operatorChangedAfterEquals: false,
         justClearedAfterEquals: false,
+        dividedByZero: false,
     };
 
     // DOM References
@@ -61,6 +61,18 @@ document.addEventListener("DOMContentLoaded", function() {
     );
 
     // Functions & Core Logic
+    function handleKeyboardPress(e) {
+        numpad.forEach(btn => {
+            if (!btn.disabled) {
+                if (e.key.toLowerCase() === btn.dataset.keyboard.toLowerCase()) {
+                    btn.classList.add('active');
+                    btn.click();
+                    setTimeout(() => btn.classList.remove('active'), BUTTON_TIMEOUT);
+                }
+            }
+        });
+    };
+
     function clearDisplay() {    
         display.textContent = "0";
         calculatorState.clearBtnClicked = true;
@@ -162,9 +174,6 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     function clearDisplayOnEqualsBtnClicked() {
-        let currentDisplayValue = stripCommas(display.textContent);
-        currentDisplayValue = parseFloat(currentDisplayValue);
-
         operation.num1 = null;
         operation.result = null;
 
@@ -239,10 +248,8 @@ document.addEventListener("DOMContentLoaded", function() {
         
         if (operation.operator === null || calculatorState.equalsBtnClicked) {
             operation.num1 = number;
-
         } else if (operation.operator !== null && !calculatorState.operatorBtnClicked) {
             operation.num2 = number;
-
         }
     };
 
@@ -291,19 +298,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    function handleKeyboardPress(e) {
-        numpad.forEach(btn => {
-            if (!btn.disabled) {
-                if (e.key.toLowerCase() === btn.dataset.keyboard.toLowerCase()) {
-                    btn.classList.add('active');
-                    btn.click();
-                    setTimeout(() => btn.classList.remove('active'), BUTTON_TIMEOUT);
-                    console.log(e.key)
-                }
-            }
-        });
-    };
-
     function performOperationChecks(e) {
         if (operation.num1 === null || operation.operator === null) return;
         if (operation.num2 === null && e.target.textContent === "=") storeNumber(display.textContent);
@@ -320,7 +314,7 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     function operate(operand1, operand2, operator) {
-        if (isDividedByZero(operand2, operator)) return null;
+        if (isDividedByZero(operand2, operator)) return;
 
         switch(operator) {
             case "+":
