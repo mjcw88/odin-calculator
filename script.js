@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     };
-
+5
     function clearDisplayOnNewNum() {
         display.textContent = "";
         calculatorState.operatorBtnClicked = false;
@@ -320,10 +320,10 @@ document.addEventListener("DOMContentLoaded", function() {
             case "+":
                 operation.result = add(operand1, operand2);
                 break;
-            case "-":
+            case "−":
                 operation.result = subtract(operand1, operand2);
                 break;
-            case "x":
+            case "×":
                 operation.result = multiply(operand1, operand2);
                 break;
             case "÷":
