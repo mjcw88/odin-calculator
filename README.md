@@ -1,6 +1,6 @@
 # The Odin Project (Foundations) - Calculator
 
-Calculator project for the Odin Project, featuring use of objects, keyboard functionality and extensive logicstical conditionals to account for edge cases. For sake of convienience, the calculator maxes out at 15 digits (positive and negative).
+Calculator project for the Odin Project, featuring use of objects, keyboard functionality and extensive logicstical conditionals to account for edge cases. For sake of convienience, the calculator maxes out at 15 digits (positive and negative) and maxes out at 3 decimal places.
 
 #### Features
 
