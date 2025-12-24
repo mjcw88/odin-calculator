@@ -22,3 +22,7 @@ Calculator project for the Odin Project, featuring use of objects, keyboard func
     Addition (+ on the keyboard)
 #### =
     Equals (Enter on the keyboard)
+
+#### Live Preview
+
+- Live Preview: https://mjcw88.github.io/odin-calculator/
