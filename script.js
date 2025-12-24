@@ -135,7 +135,9 @@ document.addEventListener("DOMContentLoaded", function() {
             calculatorState.dividedByZero = false;
         }
 
+        if (calculatorState.inverseBtnClicked) calculatorState.inverseBtnClicked = false;
         if (calculatorState.deleteLastNumberBtnClicked) calculatorState.deleteLastNumberBtnClicked = false;
+        if (calculatorState.clearBtnClicked) calculatorState.clearBtnClicked = false;
 
         updateDisplay(e.target.textContent);
     };
