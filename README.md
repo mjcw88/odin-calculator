@@ -39,4 +39,4 @@ Full project specs can be found [here](https://www.theodinproject.com/lessons/fo
 
 ##### Live Preview
 
-- Live Preview: https://mjcw88.github.io/odin-calculator/
+- Live Preview: https://thriftymeerkat.github.io/odin-calculator/
